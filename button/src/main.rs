@@ -12,7 +12,14 @@ use std::time::Duration;
 trait Drawable {
     fn draw(&self, canvas: &mut Canvas<Window>);
 }
-
+trait Text {
+    fn draw_text(
+        &self,
+        canvas: &mut Canvas<Window>,
+        font: &Font,
+        texture_creator: &TextureCreator<WindowContext>,
+    );
+}
 // --- UI Elements ---
 struct InputBar {
     x: i32,
@@ -29,6 +36,7 @@ struct Button {
     y: i32,
     w: u32,
     h: u32,
+    text: String,
     color: (u8, u8, u8),
 }
 
@@ -38,6 +46,29 @@ impl Drawable for Button {
         canvas.set_draw_color(Color::RGB(self.color.0, self.color.1, self.color.2));
         let rect = Rect::new(self.x, self.y, self.w, self.h);
         canvas.fill_rect(rect).unwrap();
+    }
+}
+impl Text for Button {
+    fn draw_text(
+        &self,
+        canvas: &mut Canvas<Window>,
+        font: &Font,
+        texture_creator: &TextureCreator<WindowContext>,
+    ) {
+        canvas.set_draw_color(Color::RGB(self.color.0, self.color.1, self.color.2));
+        let rect = Rect::new(self.x, self.y, self.w, self.h);
+        canvas.fill_rect(rect).unwrap();
+        if !self.text.is_empty() {
+            let surface = font
+                .render(&self.text)
+                .blended(Color::RGB(255, 255, 255))
+                .unwrap();
+            let texture = texture_creator
+                .create_texture_from_surface(&surface)
+                .unwrap();
+            let text_rect = Rect::new(self.x + 67, self.y + 30, surface.width(), surface.height());
+            canvas.copy(&texture, None, Some(text_rect)).unwrap();
+        }
     }
 }
 
@@ -93,6 +124,7 @@ fn main() {
         y: 400,
         w: 200,
         h: 100,
+        text: "Login".to_string(),
         color: (255, 0, 0),
     };
 
@@ -169,6 +201,7 @@ fn main() {
         canvas.clear();
 
         button_register.draw(&mut canvas);
+        button_register.draw_text(&mut canvas, &font, &texture_creator);
         input_bar_email.draw_with_text(&mut canvas, &font, &texture_creator);
         input_bar_password.draw_with_text(&mut canvas, &font, &texture_creator);
 
