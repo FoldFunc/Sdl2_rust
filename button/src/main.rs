@@ -1,3 +1,4 @@
+mod sending_data_server;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
@@ -21,6 +22,7 @@ trait Text {
     );
 }
 // --- UI Elements ---
+#[derive(Clone)]
 struct InputBar {
     x: i32,
     y: i32,
@@ -162,13 +164,14 @@ fn main() {
                 } => {
                     if mouse_btn == MouseButton::Left && point_in_button(x, y, &button_register) {
                         println!("Button clicked!");
-                        send_email_to_server(input_bar_email.text.clone());
+                        let email = input_bar_email.text.clone();
+                        let password = &input_bar_password.text.clone();
                         input_bar_email.text.clear();
                         input_bar_email.clicked = false;
-
-                        send_password_to_server(input_bar_password.text.clone());
                         input_bar_password.text.clear();
                         input_bar_password.clicked = false;
+                        let vec_send = vec![password.to_string(), email.to_string()];
+                        let _ = sending_data_server::send_data_register(&vec_send);
                     }
                 }
 
@@ -220,11 +223,4 @@ fn point_in_button(x: i32, y: i32, button: &Button) -> bool {
 
 fn point_in_input_bar(x: i32, y: i32, bar: &InputBar) -> bool {
     x >= bar.x && x <= bar.x + bar.w as i32 && y >= bar.y && y <= bar.y + bar.h as i32
-}
-
-fn send_email_to_server(val: String) {
-    println!("Sending email: {}", val);
-}
-fn send_password_to_server(val: String) {
-    println!("Sending Password: {}", val);
 }
