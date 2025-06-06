@@ -13,6 +13,7 @@ struct Input_bar {
     w: u32,
     h: u32,
     clicked: bool,
+    text: String,
     color: (u8, u8, u8),
 }
 struct Button {
@@ -43,12 +44,13 @@ fn main() {
         h: 100,
         color: (255, 0, 0),
     };
-    let mut input_bar = Input_bar {
+    let mut input_bar_email = Input_bar {
         x: 240,
         y: 300,
         w: 200,
         h: 50,
         clicked: false,
+        text: "".to_string(),
         color: (100, 0, 0),
     };
 
@@ -67,6 +69,9 @@ fn main() {
                     if mouse_btn == MouseButton::Left {
                         if point_in_button(x, y, &button_register) {
                             println!("Button clicked!");
+                            let _ = send_email_to_server(input_bar_email.text);
+                            input_bar_email.text = "".to_string();
+                            input_bar_email.clicked = false;
                         }
                     }
                     if mouse_btn == MouseButton::Right {
@@ -79,20 +84,29 @@ fn main() {
                     x, y, mouse_btn, ..
                 } => {
                     if mouse_btn == MouseButton::Left {
-                        if point_in_input_bar(x, y, &input_bar) {
-                            input_bar.clicked = !input_bar.clicked;
-                            println!("Change to: {}", input_bar.clicked);
+                        if point_in_input_bar_email(x, y, &input_bar_email) {
+                            input_bar_email.clicked = !input_bar_email.clicked;
+                            println!("Change to: {}", input_bar_email.clicked);
                         }
                     }
                 }
-
+                Event::KeyDown {
+                    keycode: Some(key), ..
+                } => {
+                    if input_bar_email.clicked == true {
+                        input_bar_email
+                            .text
+                            .push(key.to_string().parse::<char>().unwrap_or_default());
+                        println!("Current what is in the buffer: {}", input_bar_email.text);
+                    }
+                }
                 _ => {}
             }
         }
 
         canvas.set_draw_color(Color::RGB(100, 100, 100));
         canvas.clear();
-        let _ = draw_shapes(&mut canvas, &button_register, &input_bar);
+        let _ = draw_shapes(&mut canvas, &button_register, &input_bar_email);
     }
 }
 fn draw_shapes(canvas: &mut Canvas<Window>, button_register: &Button, input_field: &Input_bar) {
@@ -127,9 +141,13 @@ fn point_in_button(x: i32, y: i32, button: &Button) -> bool {
         && y >= button.y
         && y <= button.y + button.h as i32
 }
-fn point_in_input_bar(x: i32, y: i32, button: &Input_bar) -> bool {
+fn point_in_input_bar_email(x: i32, y: i32, button: &Input_bar) -> bool {
     x >= button.x
         && x <= button.x + button.w as i32
         && y >= button.y
         && y <= button.y + button.h as i32
+}
+
+fn send_email_to_server(val: String) {
+    //foo
 }
